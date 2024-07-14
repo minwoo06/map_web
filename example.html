@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLayers WMS Example</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+    <script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+    <style>
+        .map {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map" class="map"></div>
+    <script>
+        // OpenLayers 라이브러리를 사용하여 WMS 레이어를 추가합니다.
+        var param = {
+            name: '범죄주의구간(전체)',
+            serverUrl: 'http://www.safemap.go.kr/openApiService/wms/getLayerData.do?apikey=I11S03NY-I11S-I11S-I11S-I11S03NY18',
+            layername: 'A2SM_CRMNLHSPOT_TOT',
+            styles: 'A2SM_CrmnlHspot_Tot_Tot'
+        };
+
+        var wmsLayer = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                url: param.serverUrl,
+                params: {
+                    'LAYERS': param.layername,
+                    'STYLES': param.styles,
+                    'FORMAT': 'image/png',
+                    'EXCEPTIONS': 'text/xml',
+                    'TRANSPARENT': true
+                },
+                ratio: 1,
+                serverType: 'geoserver'
+            }),
+            opacity: 0.7
+        });
+
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                }),
+                wmsLayer
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([127.3845, 36.3504]), // 대전 중심 좌표
+                zoom: 10
+            })
+        });
+
+        // 범례 호출 URL을 구성합니다.
+        var legendUrl = 'http://www.safemap.go.kr/legend/legendApiXml.do?apikey=I11S03NY-I11S-I11S-I11S-I11S03NY18&layer=' + param.layername + '&style=' + param.styles;
+
+        // XMLHttpRequest를 사용하여 범례 데이터를 요청합니다.
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', legendUrl, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var xmlResponse = xhr.responseText;
+                // XML 파싱 및 처리 로직을 여기에 추가합니다.
+                console.log(xmlResponse);
+            }
+        };
+        xhr.send();
+    </script>
+</body>
+</html>
